@@ -1,0 +1,24 @@
+<!-- https://github.com/liqi0816/node-webrtc-rtsp -->
+<!-- https://github.com/node-webrtc/node-webrtc-examples/tree/master/examples/video-compositing -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>WebRTC test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+
+  <body>
+    <video autoplay muted></video>
+    <code style="display: block; white-space: pre-wrap; font: consolas"></code>
+    <button id="startRecord">startRecord</button>
+    <button id="stopRecord">stopRecord</button>
+    <script>
+      var exports = {},
+        require = () => exports;
+    </script>
+    <script src="./js/client.js"></script>
+    <script src="./js/webpage.js"></script>
+  </body>
+</html>

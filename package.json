@@ -1,0 +1,21 @@
+{
+  "name": "teste-electron-cam",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^17.2.0"
+  },
+  "dependencies": {
+    "ffbinaries": "^1.1.4",
+    "fluent-ffmpeg": "^2.1.2",
+    "koa": "^2.11.0",
+    "koa-body": "^4.1.1",
+    "koa-router": "^8.0.8",
+    "koa-static": "^5.0.0",
+    "wrtc": "^0.4.4"
+  },
+  "scripts": {
+    "start": "electron ."
+  }
+}
