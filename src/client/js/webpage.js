@@ -1,5 +1,5 @@
-// import { ClientRTCPeerConnection } from "./client.js";
-// const { ClientRTCPeerConnection } = require("./client.js");
+const { ipcRenderer } = require("electron");
+const ClientRTCPeerConnection = require("./client");
 
 (async () => {
   const code = document.getElementsByTagName("code")[0];
@@ -30,27 +30,20 @@
   code.textContent += `${JSON.stringify(track.getSettings(), null, 4)}\n`;
 
   startRecord.onclick = async () => {
-    code.textContent += `startRecord: ${await (
-      await fetch(`http://127.0.0.1/connections/${peer.id}/record`, {
-        method: "post",
-        body: new URLSearchParams({ status: "started" }),
-      })
-    ).text()}\n`;
+    const recordCode = await ipcRenderer.invoke("start-record", peer.id);
+    code.textContent += `startRecord: ${recordCode}\n`;
   };
   stopRecord.onclick = async () => {
-    code.textContent += `stopRecord: ${await (
-      await fetch(`http://127.0.0.1/connections/${peer.id}/record`, {
-        method: "post",
-        body: new URLSearchParams({ status: "stopped" }),
-      })
-    ).text()}\n`;
+    const recordCode = await ipcRenderer.invoke("stop-record", peer.id);
+    code.textContent += `stopRecord: ${recordCode}\n`;
   };
 
   await peer.initialize();
-  await fetch(`http://127.0.0.1/connections/${peer.id}/framerate`, {
-    method: "post",
-    body: "" + track.getSettings().frameRate,
-  });
+  await ipcRenderer.invoke(
+    "set-framerate",
+    peer.id,
+    track.getSettings().frameRate
+  );
   startRecord.disabled = stopRecord.disabled = false;
   code.textContent += "peer connected\n";
 })();

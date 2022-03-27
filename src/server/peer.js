@@ -5,12 +5,10 @@ const { randomBytes } = require("crypto");
 const ffmpeg = require("fluent-ffmpeg");
 
 const { sleep } = require("./common/utils.js");
-// import '../common/path-ffmpeg.js';
 
 const randomBytesAsync = promisify(randomBytes);
 module.exports.randomBytesAsync = randomBytesAsync;
 
-// export type RTCVideoSink = nonstandard.RTCVideoSink;
 const RTCVideoSink = nonstandard.RTCVideoSink;
 module.exports.RTCVideoSink = RTCVideoSink;
 

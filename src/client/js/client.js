@@ -1,12 +1,18 @@
+const { ipcRenderer } = require("electron");
+console.log(ipcRenderer);
+
 class ClientRTCPeerConnection extends RTCPeerConnection {
   id = null;
   endpoint = "http://127.0.0.1";
+  code = document.getElementsByTagName("code")[0];
 
   async initialize() {
     this.dispatchEvent(new Event("beforeinitialize"));
-    const remote = await (
-      await fetch(`${this.endpoint}/connections`, { method: "POST" })
-    ).json();
+    const remote = await ipcRenderer.invoke("create-peer");
+    console.log(remote.id);
+
+    this.code.textContent += `remote: ${JSON.stringify(remote, null, 4)}\n`;
+
     if (!remote.id) throw new TypeError("remote.id invalid");
     if (!remote.localDescription)
       throw new TypeError("remote.localDescription invalid");
@@ -18,14 +24,12 @@ class ClientRTCPeerConnection extends RTCPeerConnection {
     this.dispatchEvent(new CustomEvent("answer", { detail: answer }));
 
     await this.setLocalDescription(answer);
-    await fetch(
-      `${this.endpoint}/connections/${remote.id}/remote-description`,
-      {
-        method: "POST",
-        body: JSON.stringify(this.localDescription),
-        headers: { "Content-Type": "application/json" },
-      }
+    await ipcRenderer.invoke(
+      "set-remove-description",
+      remote.id,
+      JSON.stringify(this.localDescription)
     );
+
     this.dispatchEvent(new Event("initialize"));
     return this.description;
   }
@@ -49,9 +53,7 @@ class ClientRTCPeerConnection extends RTCPeerConnection {
 
   close() {
     super.close();
-    fetch(`${this.endpoint}/connections/${this.id}`, {
-      method: "DELETE",
-    }).catch(() => {});
+    ipcRenderer.invoke("remove-peer", this.id);
     this.dispatchEvent({ type: "close" });
   }
 
@@ -59,3 +61,5 @@ class ClientRTCPeerConnection extends RTCPeerConnection {
     return sdp.replace(/\r\na=ice-options:trickle/g, "");
   }
 }
+
+module.exports = ClientRTCPeerConnection;
