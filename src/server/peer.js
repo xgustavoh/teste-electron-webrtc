@@ -1,18 +1,20 @@
-import { RTCPeerConnection, nonstandard } from "wrtc";
-import { promisify } from "util";
-import { PassThrough } from "stream";
-import { randomBytes } from "crypto";
-import * as ffmpeg from "fluent-ffmpeg";
+const { RTCPeerConnection, nonstandard } = require("wrtc");
+const { promisify } = require("util");
+const { PassThrough } = require("stream");
+const { randomBytes } = require("crypto");
+const ffmpeg = require("fluent-ffmpeg");
 
-import { sleep } from "../common/util.js";
+const { sleep } = require("./common/utils.js");
 // import '../common/path-ffmpeg.js';
 
-export const randomBytesAsync = promisify(randomBytes);
+const randomBytesAsync = promisify(randomBytes);
+module.exports.randomBytesAsync = randomBytesAsync;
 
 // export type RTCVideoSink = nonstandard.RTCVideoSink;
-export const RTCVideoSink = nonstandard.RTCVideoSink;
+const RTCVideoSink = nonstandard.RTCVideoSink;
+module.exports.RTCVideoSink = RTCVideoSink;
 
-export class ServerRTCPeerConnection extends RTCPeerConnection {
+class ServerRTCPeerConnection extends RTCPeerConnection {
   id;
   creationTimestamp;
 
@@ -72,6 +74,7 @@ export class ServerRTCPeerConnection extends RTCPeerConnection {
   recordFfmpeg = null;
   recordPathPrefix;
   recordFrameHandler = ({ frame: { width, height, data } }) => {
+    console.log("recordFrameHandler", width, height);
     if (this.width !== width || this.height !== height) {
       this.stopRecord(true);
 
@@ -92,9 +95,37 @@ export class ServerRTCPeerConnection extends RTCPeerConnection {
           "-fflags",
           "nobuffer",
         ])
-        .outputFormat("rtsp")
-        .output(`rtsp://127.0.0.1:5554/${this.id}`);
-      // .output(`${this.recordPathPrefix}-${Date.now()}-${width}x${height}.mp4`);
+        // .outputFormat("rtsp")
+        // .output(`rtsp://127.0.0.1:5554/${this.id}`);
+        .output(
+          `${this.recordPathPrefix}-${Date.now()}-${width}x${height}.mp4`
+        );
+      this.recordFfmpeg
+        .on("start", function (commandLine) {
+          console.log("Spawned Ffmpeg with command: " + commandLine);
+        })
+        .on("codecData", function (data) {
+          console.log(
+            "Input is " +
+              data.audio +
+              " audio " +
+              "with " +
+              data.video +
+              " video"
+          );
+        })
+        .on("progress", function (progress) {
+          console.log("Processing: " + progress.percent + "% done");
+        })
+        .on("stderr", function (stderrLine) {
+          console.log("Stderr output: " + stderrLine);
+        })
+        .on("error", function (err, stdout, stderr) {
+          console.log("Cannot process video: " + err.message);
+        })
+        .on("end", function (stdout, stderr) {
+          console.log("Transcoding succeeded !");
+        });
       this.recordFfmpeg.run();
     }
     if (!this.recordStream) throw new TypeError("stream uninitialized");
@@ -187,3 +218,5 @@ export class ServerRTCPeerConnection extends RTCPeerConnection {
     return id;
   }
 }
+
+module.exports.ServerRTCPeerConnection = ServerRTCPeerConnection;

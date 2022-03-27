@@ -1,4 +1,4 @@
-export class ClientRTCPeerConnection extends RTCPeerConnection {
+class ClientRTCPeerConnection extends RTCPeerConnection {
   id = null;
   endpoint = "http://127.0.0.1";
 

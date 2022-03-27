@@ -1,7 +1,7 @@
-import * as Koa from "koa";
-import * as koaBody from "koa-body";
-import * as KoaRouter from "koa-router";
-import { ServerRTCPeerConnection } from "./peer.js";
+const Koa = require("koa");
+const koaBody = require("koa-body");
+const KoaRouter = require("koa-router");
+const { ServerRTCPeerConnection } = require("./peer.js");
 
 const connections = new Map();
 const router = new KoaRouter();
@@ -119,4 +119,4 @@ router.post(
 const app = new Koa();
 app.use(router.routes());
 app.use(router.allowedMethods());
-if (!module.parent) app.listen(80);
+app.listen(80, (err) => console.log("liste", err));
